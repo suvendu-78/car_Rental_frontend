@@ -1,653 +1,1001 @@
+import React, { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  MapPin,
+  CalendarDays,
+  CarFront,
+  Bike,
+  BusFront,
+  Hotel,
+  Utensils,
+  Hospital,
+  Wrench,
+  ShieldCheck,
+  IndianRupee,
+  Headset,
+  Leaf,
+  Mountain,
+  Clock,
+} from "lucide-react";
 
-const bhubaneswarIcon = L.divIcon({
-  className: "",
-  html: `
-    <div style="
-      width: 30px;
-      height: 30px;
-      background: #3182ce;
-      border: 3px solid white;
-      border-radius: 50% 50% 50% 0;
-      transform: rotate(-45deg);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.35);
-    ">
-      <div style="
-        width: 10px;
-        height: 10px;
-        background: white;
-        border-radius: 50%;
-        position: absolute;
-        top: 7px;
-        left: 7px;
-      "></div>
-    </div>
-  `,
-  iconSize: [30, 30],
-  iconAnchor: [15, 30],
-});
+// HERO SLIDES
+const heroSlides = [
+  {
+    image: "/images/Hero.jpeg",
+    heading: "Discover Odisha.",
+    accent: "Drive Your Own Story.",
+    description:
+      "Find the perfect ride, discover beautiful destinations and explore Odisha at your own pace.",
+    label: "EXPLORE THE SOUL OF ODISHA",
+  },
+  {
+    image: "/images/Hero_solo.jpeg",
+    heading: "Take the Scenic",
+    accent: "Road Less Travelled.",
+    description:
+      "Enjoy the freedom of the open road and create unforgettable memories.",
+    label: "YOUR JOURNEY YOUR RULES",
+  },
+  {
+    image: "/images/Hero_family.jpeg",
+    heading: "Every Journey",
+    accent: "Brings You Closer.",
+    description:
+      "Discover comfortable rides and amazing destinations with your loved ones.",
+    label: "MAKE MEMORIES TOGETHER",
+  },
+];
+
+// HERO COLLAGE IMAGES
+// Add more image objects here whenever you want.
+const collageImages = [
+  { src: "/images/Hero.jpeg", alt: "Odisha road journey" },
+  { src: "/images/Hero_solo.jpeg", alt: "Solo adventure" },
+  { src: "/images/Hero_family.jpeg", alt: "Family travel" },
+  { src: "/images/solo.jpeg", alt: "Solo bike ride" },
+  { src: "/images/couple.jpeg", alt: "Couple road trip" },
+  { src: "/images/family.jpeg", alt: "Family journey" },
+  { src: "/images/suntemple.jpeg", alt: "Konark Sun Temple" },
+  { src: "/images/chilika.jpeg", alt: "Chilika Lake" },
+  { src: "/images/deomali.jpeg", alt: "Deomali hills" },
+  { src: "/images/tikarpada.jpeg", alt: "Tikarapada destination" },
+  { src: "/images/puri.jpg", alt: "Puri beach" },
+  { src: "/images/konark.jpg", alt: "Konark heritage" },
+  { src: "/images/simlipal.jpg", alt: "Similipal forest" },
+  { src: "/images/hotel.jpeg", alt: "Travel accommodation" },
+  { src: "/images/restaurant.jpeg", alt: "Local dining" },
+];
+
+// DESTINATIONS
+const destinations = [
+  {
+    name: "Puri",
+    description: "Beach • Temple • Leisure",
+    image: "/images/puri.jpg",
+  },
+  {
+    name: "Konark",
+    description: "Heritage • History",
+    image: "/images/konark.jpg",
+  },
+  {
+    name: "Chilika",
+    description: "Lake • Nature • Birds",
+    image: "/images/chilika.jpeg",
+  },
+  {
+    name: "Deomali",
+    description: "Hiking • Mountains",
+    image: "/images/deomali.jpeg",
+  },
+  {
+    name: "Similipal",
+    description: "Forest • Wildlife",
+    image: "/images/simlipal.jpg",
+  },
+];
+
+// CATEGORIES
+const categories = [
+  {
+    name: "Solo Ride",
+    subtitle: "Freedom on Two Wheels",
+    description:
+      "Explore Odisha independently with comfortable bikes and scooters.",
+    image: "/images/solo.jpeg",
+    icon: Bike,
+    route: "/solo",
+    tag: "Bike & Scooter",
+  },
+  {
+    name: "Couple Ride",
+    subtitle: "Comfortable Journey for Two",
+    description:
+      "Enjoy beautiful road trips with your partner in a comfortable car.",
+    image: "/images/couple.jpeg",
+    icon: CarFront,
+    route: "/solo",
+    tag: "Cars & SUVs",
+  },
+  {
+    name: "Family Ride",
+    subtitle: "Travel Together",
+    description:
+      "Discover destinations and create wonderful memories together.",
+    image: "/images/family.jpeg",
+    icon: BusFront,
+    route: "/solo",
+    tag: "Family Vehicles",
+  },
+  {
+    name: "Hotels",
+    subtitle: "Relax and Recharge",
+    description: "Discover comfortable stays across beautiful Odisha.",
+    image: "/images/hotel.jpeg",
+    icon: Hotel,
+    route: "/hotels",
+    tag: "Stay & Explore",
+  },
+  {
+    name: "Restaurants",
+    subtitle: "Taste Odisha",
+    description: "Discover local restaurants and delicious regional food.",
+    image: "/images/restaurant.jpeg",
+    icon: Utensils,
+    route: "/restaurants",
+    tag: "Food & Dining",
+  },
+  {
+    name: "Healthcare",
+    subtitle: "Travel Safely",
+    description: "Find healthcare facilities during your journey.",
+    image: "/images/hospital.jpeg",
+    icon: Hospital,
+    route: "/services",
+    tag: "Nearby Services",
+  },
+  {
+    name: "Mechanic",
+    subtitle: "Roadside Assistance",
+    description: "Find vehicle repair and maintenance services.",
+    image: "/images/mechanic.jpeg",
+    icon: Wrench,
+    route: "/services",
+    tag: "Vehicle Support",
+  },
+];
+
+// TOUR PACKAGES
+const tourPackages = [
+  {
+    name: "Puri Beach Escape",
+    location: "Puri, Odisha",
+    duration: "2 Days / 1 Night",
+    category: "Beach Tour",
+    image: "/images/puri.jpg",
+    description:
+      "Enjoy beautiful beaches, Jagannath Temple and the peaceful coastal atmosphere.",
+  },
+  {
+    name: "Konark Heritage Tour",
+    location: "Konark, Odisha",
+    duration: "1 Day",
+    category: "Heritage Tour",
+    image: "/images/konark.jpg",
+    description:
+      "Explore the iconic Sun Temple and discover Odisha's rich architectural heritage.",
+  },
+  {
+    name: "Chilika Nature Escape",
+    location: "Chilika, Odisha",
+    duration: "2 Days / 1 Night",
+    category: "Nature Tour",
+    image: "/images/chilika.jpeg",
+    description:
+      "Experience the beauty of Chilika Lake, scenic views and birdwatching.",
+  },
+  {
+    name: "Deomali Adventure",
+    location: "Koraput, Odisha",
+    duration: "3 Days / 2 Nights",
+    category: "Adventure Tour",
+    image: "/images/deomali.jpeg",
+    description:
+      "Explore Odisha's highest peak with beautiful mountain landscapes.",
+  },
+];
+
+// OFFERS
+const offers = [
+  {
+    title: "Weekend Getaway",
+    subtitle: "Special travel offers",
+    discount: "UP TO 30% OFF",
+    image: "/images/weekend.jpg",
+  },
+  {
+    title: "Explore Odisha",
+    subtitle: "Discover new destinations",
+    discount: "SPECIAL DEALS",
+    image: "/images/odisha.jpg",
+  },
+  {
+    title: "Long Drive Special",
+    subtitle: "Make every kilometre count",
+    discount: "EXCLUSIVE OFFERS",
+    image: "/images/long-drive.jpg",
+  },
+];
+
+// FAQ
+const faqs = [
+  {
+    question: "What vehicles are available on MapMySafar?",
+    answer:
+      "You can explore bikes, scooters, cars and SUVs depending on availability.",
+  },
+  {
+    question: "Can I book a vehicle for multiple days?",
+    answer:
+      "Yes. You can select hourly or multi-day rental options based on vehicle availability.",
+  },
+  {
+    question: "Can I travel outside my pickup city?",
+    answer:
+      "Travel within permitted Odisha routes is subject to the vehicle's rental terms and restrictions.",
+  },
+  {
+    question: "How can I manage my booking?",
+    answer:
+      "Use the Manage Booking option to access your booking details and available booking actions.",
+  },
+];
 
 const Home = () => {
-  const categories = [
-    { title: "Solo Ride", image: "/images/solo.jpg" },
-    { title: "Couple Ride", image: "/images/couple.jpg" },
-    { title: "Family Ride", image: "/images/family.jpg" },
-    { title: "Visiting Place", image: "/images/visiting.jpg" },
-    { title: "Mechanic", image: "/images/mechanic.jpg" },
-    { title: "Hospital", image: "/images/hospital.jpg" },
-    { title: "Hotel", image: "/images/hotel.jpg" },
-  ];
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [pickup, setPickup] = useState("");
+  const [destination, setDestination] = useState("");
+  const [pickupDate, setPickupDate] = useState("");
+  const [returnDate, setReturnDate] = useState("");
 
-  const exploreCategories = [
-    {
-      title: "Solo Ride",
-      type: "Freedom on Two Wheels",
-      details: "Bike • Scooter • Easy Ride",
-      image: "/images/solo.jpg",
-    },
-    {
-      title: "Couple Ride",
-      type: "Comfortable Journey for Two",
-      details: "Sedan • SUV • Comfortable",
-      image: "/images/couple.jpg",
-    },
-    {
-      title: "Family Ride",
-      type: "Travel Together, Travel Better",
-      details: "SUV • Traveller • Spacious",
-      image: "/images/family.jpg",
-    },
-    {
-      title: "Restaurant",
-      type: "Taste the Local Flavours",
-      details: "Local Food • Dining • Cafés",
-      image: "/images/restaurant.jpg",
-    },
-    {
-      title: "Hospital",
-      type: "Healthcare When You Need It",
-      details: "Emergency • Care • Nearby",
-      image: "/images/hospital.jpg",
-    },
-    {
-      title: "Mechanic",
-      type: "Keep Your Journey Moving",
-      details: "Car • Bike • Service",
-      image: "/images/mechanic.jpg",
-    },
-    {
-      title: "Hotel",
-      type: "Relax, Rest & Stay",
-      details: "Hotel • Resort • Stay",
-      image: "/images/hotel.jpg",
-    },
-  ];
+  // Automatic hero slide
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 5000);
 
-  const offers = [
-    {
-      title: "Weekend Getaway",
-      subtitle: "Up to 30% OFF",
-      image: "/images/weekend.jpg",
-      button: "Book Now",
-    },
-    {
-      title: "Long Drive Special",
-      subtitle: "Flat 25% OFF",
-      image: "/images/long-drive.jpg",
-      button: "View Offers",
-    },
-    {
-      title: "Explore Odisha",
-      subtitle: "Special Packages",
-      image: "/images/odisha.jpg",
-      button: "See Deals",
-    },
-  ];
+    return () => clearInterval(timer);
+  }, []);
 
-  const hiddenPlaces = [
-    {
-      title: "Naudhei Waterfall",
-      image: "/images/naudehi.jpg",
-    },
-    {
-      title: "Deomali Hills",
-      image: "/images/deomali.jpg",
-    },
-    {
-      title: "Chilika Sunset",
-      image: "/images/chilika_sun_set.jpg",
-    },
-    {
-      title: "Tikarapada",
-      image: "/images/tikarpada.jpg",
-    },
-    {
-      title: "Belghar Nature",
-      image: "/images/belghar.jpg",
-    },
-  ];
+  const handleSearch = () => {
+    if (!pickup || !pickupDate || !returnDate) {
+      alert("Please select pickup location and travel dates.");
+      return;
+    }
 
-  const popularSearches = [
-    {
-      name: "Puri",
-      description: "Beach • Temple",
-      image: "/images/puri.jpg",
-    },
-    {
-      name: "Konark",
-      description: "Sun Temple",
-      image: "/images/konark.jpg",
-    },
-    {
-      name: "Chilika",
-      description: "Lake • Nature",
-      image: "/images/chilika_sun_set.jpg",
-    },
-    {
-      name: "Similipal",
-      description: "Forest • Wildlife",
-      image: "/images/simlipal.jpg",
-    },
-    {
-      name: "Koraput",
-      description: "Hills • Nature",
-      image: "/images/deomali.jpg",
-    },
-  ];
+    if (new Date(returnDate) < new Date(pickupDate)) {
+      alert("Return date cannot be before pickup date.");
+      return;
+    }
+
+    const params = new URLSearchParams({
+      pickup,
+      destination,
+      pickupDate,
+      returnDate,
+    });
+
+    window.location.href = `/solo?${params.toString()}`;
+  };
 
   return (
-    <main className="bg-[#F4EFEA] text-[#1E3A2B]">
-      <section className="hidden sm:block px-3 sm:px-5 lg:px-8 pt-5">
-        <div className="max-w-[1450px] mx-auto">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4">
-            {categories.map((category) =>
-              category.title === "Solo Ride" ? (
-                <NavLink
-                  key={category.title}
-                  to="/solo"
-                  className="bg-white border border-[#1E3A2B]/10 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300"
-                >
-                  <div className="aspect-[4/3] w-full overflow-hidden bg-gray-100">
-                    <img
-                      src={category.image}
-                      alt={category.title}
-                      loading="eager"
-                      decoding="async"
-                      className="block w-full h-full object-cover object-center"
-                    />
-                  </div>
+    <main className="min-h-screen overflow-hidden bg-[#F7F7F5] text-[#17231E]">
+      <div className="font-['DM_Sans']">
+        {/* NAVBAR */}
 
-                  <div className="h-14 flex items-center justify-center px-2">
-                    <span className="text-sm sm:text-base font-semibold text-center tracking-tight">
-                      {category.title}
+        {/* HERO SECTION */}
+
+        <section className="relative px-4 pt-5 sm:px-7 lg:px-10">
+          <div className="mx-auto max-w-[1300px] text-center">
+            <p className="text-xs font-bold tracking-[.3em] text-[#D96B43]">
+              EXPLORE ODISHA YOUR WAY
+            </p>
+
+            <h1 className="mt-3 text-4xl font-extrabold leading-[1.08] tracking-[-0.045em] sm:text-5xl lg:text-[60px]">
+              Discover Odisha.
+              <span className="block text-[#123B2D]">
+                Drive Your Own Story.
+              </span>
+            </h1>
+
+            <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-[#68736D] sm:text-base">
+              From beautiful coastal roads to peaceful hill destinations,
+              discover Odisha with the perfect ride for every journey.
+            </p>
+
+            {/* STATS */}
+
+            <div className="mt-4 flex flex-wrap justify-center gap-6">
+              <div>
+                <h3 className="text-2xl font-extrabold text-[#123B2D]">30+</h3>
+                <p className="text-xs text-gray-500">Destinations</p>
+              </div>
+
+              <div className="h-12 w-px bg-gray-200" />
+
+              <div>
+                <h3 className="text-2xl font-extrabold text-[#123B2D]">7+</h3>
+                <p className="text-xs text-gray-500">Travel Services</p>
+              </div>
+
+              <div className="h-12 w-px bg-gray-200" />
+
+              <div>
+                <h3 className="text-2xl font-extrabold text-[#123B2D]">24×7</h3>
+                <p className="text-xs text-gray-500">Travel Support</p>
+              </div>
+            </div>
+          </div>
+
+          {/* INFINITE MOVING IMAGE COLLAGE */}
+
+          <div className="mapsaf-collage-window mx-auto mt-5 max-w-[1450px] sm:mt-6">
+            <div className="mapsaf-collage-track">
+              {[...collageImages, ...collageImages].map((image, index) => (
+                <div
+                  className="mapsaf-collage-card"
+                  key={`${index}-${image.src}`}
+                  aria-hidden={
+                    index >= collageImages.length ? "true" : undefined
+                  }
+                >
+                  <img
+                    src={image.src}
+                    alt={image.alt}
+                    loading={index < 5 ? "eager" : "lazy"}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* BOOKING SEARCH */}
+
+          <div className="relative z-20 mx-auto -mt-1 max-w-[1200px] rounded-3xl border border-[#E8E1D5] bg-white p-4 shadow-xl sm:p-7">
+            <div className="mb-6 flex flex-wrap gap-3">
+              <NavLink
+                to="/solo"
+                className="rounded-full bg-[#123B2D] px-6 py-3 text-xs font-bold text-white"
+              >
+                <CarFront className="mr-2 inline" size={17} />
+                Self Drive
+              </NavLink>
+
+              <NavLink
+                to="/cityRide"
+                className="rounded-full px-5 py-3 text-xs font-semibold text-gray-600 hover:bg-[#F1F1EC]"
+              >
+                <CarFront className="mr-2 inline" size={16} />
+                City Ride
+              </NavLink>
+
+              <NavLink
+                to="/tours"
+                className="rounded-full px-5 py-3 text-xs font-semibold text-gray-600 hover:bg-[#F1F1EC]"
+              >
+                <Mountain className="mr-2 inline" size={16} />
+                Tour Packages
+              </NavLink>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+              {/* PICKUP LOCATION */}
+
+              <label className="rounded-xl border border-gray-200 bg-[#FAFBF9] p-3">
+                <span className="flex items-center gap-2 text-[10px] font-bold uppercase text-gray-500">
+                  <MapPin size={14} className="text-[#D96B43]" />
+                  Pickup Location
+                </span>
+
+                <select
+                  value={pickup}
+                  onChange={(e) => setPickup(e.target.value)}
+                  className="mt-3 w-full bg-transparent text-sm font-bold outline-none"
+                >
+                  <option value="">Select City</option>
+                  {[
+                    "Bhubaneswar",
+                    "Puri",
+                    "Cuttack",
+                    "Konark",
+                    "Koraput",
+                    "Sambalpur",
+                    "Rourkela",
+                    "Berhampur",
+                  ].map((city) => (
+                    <option key={city}>{city}</option>
+                  ))}
+                </select>
+              </label>
+
+              {/* DESTINATION */}
+
+              <label className="rounded-xl border border-gray-200 bg-[#FAFBF9] p-3">
+                <span className="flex items-center gap-2 text-[10px] font-bold uppercase text-gray-500">
+                  <MapPin size={14} className="text-[#D96B43]" />
+                  Destination
+                </span>
+
+                <select
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  className="mt-3 w-full bg-transparent text-sm font-bold outline-none"
+                >
+                  <option value="">Select Destination</option>
+                  {[
+                    "Puri",
+                    "Konark",
+                    "Chilika",
+                    "Deomali",
+                    "Similipal",
+                    "Tikarapada",
+                    "Bhubaneswar",
+                  ].map((city) => (
+                    <option key={city}>{city}</option>
+                  ))}
+                </select>
+              </label>
+
+              {/* PICKUP DATE */}
+
+              <label className="rounded-xl border border-gray-200 bg-[#FAFBF9] p-3">
+                <span className="flex items-center gap-2 text-[10px] font-bold uppercase text-gray-500">
+                  <CalendarDays size={14} className="text-[#D96B43]" />
+                  Pickup Date
+                </span>
+
+                <input
+                  type="date"
+                  value={pickupDate}
+                  min={new Date().toISOString().split("T")[0]}
+                  onChange={(e) => setPickupDate(e.target.value)}
+                  className="mt-3 w-full bg-transparent text-sm font-bold outline-none"
+                />
+              </label>
+
+              {/* RETURN DATE */}
+
+              <label className="rounded-xl border border-gray-200 bg-[#FAFBF9] p-3">
+                <span className="flex items-center gap-2 text-[10px] font-bold uppercase text-gray-500">
+                  <CalendarDays size={14} className="text-[#D96B43]" />
+                  Return Date
+                </span>
+
+                <input
+                  type="date"
+                  value={returnDate}
+                  min={pickupDate || new Date().toISOString().split("T")[0]}
+                  onChange={(e) => setReturnDate(e.target.value)}
+                  className="mt-3 w-full bg-transparent text-sm font-bold outline-none"
+                />
+              </label>
+
+              {/* SEARCH BUTTON */}
+
+              <button
+                onClick={handleSearch}
+                className="flex items-center justify-center gap-2 rounded-xl bg-[#D96B43] px-5 py-4 text-sm font-bold text-white transition hover:bg-[#C65A35]"
+              >
+                Find Your Ride
+                <ArrowRight size={18} />
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* QUICK SERVICES */}
+
+        <section className="px-5 py-14 lg:px-10">
+          <div className="mx-auto grid max-w-[1250px] grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+            {[
+              ["Self Drive", CarFront, "/solo"],
+              ["City Ride", CarFront, "/cityRide"],
+              ["Tour Packages", Mountain, "/tours"],
+              ["Hotels", Hotel, "/hotels"],
+              ["Restaurants", Utensils, "/restaurants"],
+              ["Travel Support", Wrench, "/services"],
+            ].map(([name, Icon, path]) => (
+              <NavLink
+                to={path}
+                key={name}
+                className="rounded-2xl border border-gray-200 bg-white p-5 text-center transition hover:-translate-y-1 hover:border-[#D96B43] hover:shadow-lg"
+              >
+                <Icon size={27} className="mx-auto text-[#123B2D]" />
+                <h3 className="mt-3 text-sm font-bold">{name}</h3>
+                <p className="mt-1 text-[10px] text-gray-500">
+                  Explore services
+                </p>
+              </NavLink>
+            ))}
+          </div>
+        </section>
+
+        {/* CITY RIDE SECTION */}
+
+        <section className="px-5 pb-16 lg:px-10">
+          <div className="mx-auto max-w-[1320px] overflow-hidden rounded-3xl bg-[#123B2D]">
+            <div className="grid lg:grid-cols-2">
+              <div className="relative min-h-[340px]">
+                <img
+                  src="/images/city-road.jpg"
+                  alt="City ride"
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#123B2D]/20 to-transparent" />
+              </div>
+
+              <div className="flex flex-col justify-center p-8 text-white sm:p-12">
+                <p className="text-xs font-bold tracking-[.25em] text-[#F4A27B]">
+                  QUICK CITY TRAVEL
+                </p>
+
+                <h2 className="mt-4 text-4xl font-extrabold tracking-[-0.045em] sm:text-5xl">
+                  Going Somewhere
+                  <span className="block text-[#F07850]">Nearby?</span>
+                </h2>
+
+                <p className="mt-5 text-sm leading-7 text-white/75">
+                  Need to travel across the city? Book a comfortable local ride
+                  for shopping, office commutes, meetings and everyday trips.
+                </p>
+
+                <div className="mt-7 grid grid-cols-2 gap-4">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Clock className="text-[#F07850]" size={19} />
+                    Flexible Rides
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <MapPin className="text-[#F07850]" size={19} />
+                    Local Trips
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <CarFront className="text-[#F07850]" size={19} />
+                    Comfortable Cars
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <ShieldCheck className="text-[#F07850]" size={19} />
+                    Reliable Travel
+                  </div>
+                </div>
+
+                <NavLink
+                  to="/cityRide"
+                  className="mt-8 inline-flex w-fit items-center gap-3 rounded-xl bg-[#D96B43] px-6 py-4 text-sm font-bold text-white transition hover:bg-[#C65A35]"
+                >
+                  Book a City Ride
+                  <ArrowRight size={19} />
+                </NavLink>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* DESTINATIONS */}
+
+        <section className="bg-white px-5 py-16 lg:px-10">
+          <div className="mx-auto max-w-[1320px]">
+            <div className="text-center">
+              <p className="text-xs font-bold tracking-[.25em] text-[#D96B43]">
+                DISCOVER ODISHA
+              </p>
+
+              <h2 className="mt-3 text-3xl font-extrabold tracking-[-0.045em] sm:text-4xl">
+                Best Places to Explore
+              </h2>
+
+              <p className="mt-3 text-sm text-gray-500">
+                Find beautiful destinations for your next road trip.
+              </p>
+            </div>
+
+            <div className="mt-10 flex snap-x gap-5 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {destinations.map((place) => (
+                <NavLink
+                  to="/tours"
+                  key={place.name}
+                  className="relative h-[340px] min-w-[240px] flex-1 snap-start overflow-hidden rounded-2xl bg-[#123B2D]"
+                >
+                  <img
+                    src={place.image}
+                    alt={place.name}
+                    className="h-full w-full object-cover transition duration-500 hover:scale-105"
+                  />
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+
+                  <div className="absolute bottom-0 p-6 text-white">
+                    <h3 className="text-2xl font-bold">{place.name}</h3>
+                    <p className="mt-2 text-xs text-white/80">
+                      {place.description}
+                    </p>
+                    <span className="mt-4 flex items-center gap-2 text-xs font-bold text-[#F4A27B]">
+                      Explore destination
+                      <ArrowUpRight size={16} />
                     </span>
                   </div>
                 </NavLink>
-              ) : (
-                <div
-                  key={category.title}
-                  className="bg-white border border-[#1E3A2B]/10 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300"
-                >
-                  <div className="aspect-[4/3] w-full overflow-hidden bg-gray-100">
-                    <img
-                      src={category.image}
-                      alt={category.title}
-                      loading="eager"
-                      decoding="async"
-                      className="block w-full h-full object-cover object-center"
-                    />
-                  </div>
-
-                  <div className="h-14 flex items-center justify-center px-2">
-                    <span className="text-sm sm:text-base font-semibold text-center tracking-tight">
-                      {category.title}
-                    </span>
-                  </div>
-                </div>
-              ),
-            )}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="px-3 sm:px-5 lg:px-8 mt-5">
-        <div className="max-w-[1450px] mx-auto">
-          <div className="relative h-[330px] sm:h-[440px] lg:h-[520px] overflow-hidden rounded-2xl">
-            <img
-              src="/images/hero.jpg"
-              alt="Explore Odisha"
-              fetchPriority="high"
-              decoding="async"
-              className="absolute inset-0 w-full h-full object-cover object-center"
-            />
+        {/* WHY MAPMYSAFAR */}
 
-            <div className="absolute inset-0 bg-gradient-to-r from-[#1E3A2B]/80 via-[#1E3A2B]/40 to-transparent" />
-
-            <div className="relative z-10 max-w-2xl px-5 sm:px-10 lg:px-14 pt-16 sm:pt-24 lg:pt-28">
-              <p className="text-[#D96B43] text-sm font-semibold uppercase tracking-[0.18em]">
-                Explore Odisha
+        <section className="px-5 py-16 lg:px-10">
+          <div className="mx-auto grid max-w-[1250px] gap-10 lg:grid-cols-2 lg:items-center">
+            <div>
+              <p className="text-xs font-bold tracking-[.25em] text-[#D96B43]">
+                YOUR JOURNEY, OUR PRIORITY
               </p>
 
-              <h1 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight tracking-tight">
-                Book vehicle
-                <span className="text-[#D96B43]"> anywhere </span>
-                and go to home safely with affordable price
-              </h1>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="px-3 sm:px-5 lg:px-8 -mt-16 relative z-10">
-        <div className="max-w-[1450px] mx-auto">
-          <div className="bg-white rounded-2xl shadow-xl border border-[#1E3A2B]/10 p-4 sm:p-5">
-            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-              <div>
-                <label className="text-xs font-semibold text-[#1E3A2B]">
-                  State
-                </label>
-
-                <select className="mt-1 w-full h-11 px-3 bg-[#F4EFEA] border border-[#1E3A2B]/10 rounded-lg text-sm outline-none focus:border-[#D96B43]">
-                  <option>Odisha</option>
-                  <option>West Bengal</option>
-                  <option>Jharkhand</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-[#1E3A2B]">
-                  District
-                </label>
-
-                <select className="mt-1 w-full h-11 px-3 bg-[#F4EFEA] border border-[#1E3A2B]/10 rounded-lg text-sm outline-none focus:border-[#D96B43]">
-                  <option>Select District</option>
-                  <option>Khordha</option>
-                  <option>Puri</option>
-                  <option>Cuttack</option>
-                  <option>Koraput</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-[#1E3A2B]">
-                  Visiting Place / Work
-                </label>
-
-                <select className="mt-1 w-full h-11 px-3 bg-[#F4EFEA] border border-[#1E3A2B]/10 rounded-lg text-sm outline-none focus:border-[#D96B43]">
-                  <option>Choose Place</option>
-                  <option>Puri Beach</option>
-                  <option>Konark</option>
-                  <option>Chilika</option>
-                  <option>Similipal</option>
-                </select>
-              </div>
-
-              <div className="flex items-end">
-                <button className="w-full h-11 bg-[#D96B43] hover:bg-[#c55c39] text-white font-semibold rounded-lg transition">
-                  Search
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="px-3 sm:px-5 lg:px-8 py-12">
-        <div className="max-w-[1450px] mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <div className="bg-white rounded-2xl border border-[#1E3A2B]/10 p-5 sm:p-6">
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
-                Search state and their district with
-                <span className="text-[#D96B43]">
-                  {" "}
-                  their visiting place
-                </span>{" "}
-                and another work
+              <h2 className="mt-4 text-4xl font-extrabold leading-tight tracking-[-0.045em]">
+                Travel Better.
+                <span className="block text-[#123B2D]">Explore Freely.</span>
               </h2>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
-                <select className="h-11 px-3 bg-[#F4EFEA] border border-[#1E3A2B]/10 rounded-lg text-sm">
-                  <option>Select State</option>
-                </select>
+              <p className="mt-5 max-w-lg text-sm leading-7 text-gray-500">
+                MapMySafar makes exploring Odisha easier with vehicle rentals,
+                destination discovery and helpful travel services in one place.
+              </p>
 
-                <select className="h-11 px-3 bg-[#F4EFEA] border border-[#1E3A2B]/10 rounded-lg text-sm">
-                  <option>Select District</option>
-                </select>
-
-                <select className="h-11 px-3 bg-[#F4EFEA] border border-[#1E3A2B]/10 rounded-lg text-sm">
-                  <option>Visiting Place</option>
-                </select>
-              </div>
-
-              <button className="w-full mt-4 h-11 bg-[#D96B43] hover:bg-[#c55c39] text-white rounded-lg font-semibold transition">
-                Find Cars →
-              </button>
-
-              <div className="mt-6">
-                <div className="flex items-center justify-between mb-5">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-1 h-7 bg-[#D96B43] rounded-full"></span>
-
-                      <p className="text-base sm:text-lg font-bold text-[#1E3A2B]">
-                        Popular Searches
-                      </p>
-                    </div>
-
-                    <p className="text-xs text-gray-500 mt-1 ml-3">
-                      Explore popular destinations in Odisha
-                    </p>
-                  </div>
-
-                  <div className="hidden sm:flex w-9 h-9 rounded-full bg-[#F4EFEA] items-center justify-center text-lg">
-                    📍
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-                  {popularSearches.map((place) => (
-                    <button
-                      key={place.name}
-                      type="button"
-                      className="group text-left bg-[#F8F5F1] hover:bg-white border border-[#1E3A2B]/10 rounded-xl p-2 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 min-w-0"
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg overflow-hidden shrink-0">
-                          <img
-                            src={place.image}
-                            alt={place.name}
-                            loading="lazy"
-                            decoding="async"
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                          />
-                        </div>
-
-                        <div className="min-w-0 flex-1 overflow-hidden">
-                          <div className="flex items-center gap-1 min-w-0">
-                            <span className="text-[#D96B43] text-[9px] shrink-0">
-                              📍
-                            </span>
-
-                            <p className="font-bold text-xs text-[#1E3A2B] truncate">
-                              {place.name}
-                            </p>
-                          </div>
-
-                          <p className="text-[9px] text-gray-500 mt-0.5 truncate">
-                            {place.description}
-                          </p>
-
-                          <span className="inline-flex items-center gap-0.5 text-[9px] font-semibold text-[#D96B43] mt-1">
-                            Explore →
-                          </span>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <NavLink
+                to="/about"
+                className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#123B2D] px-6 py-3 text-sm font-bold text-white hover:bg-[#D96B43]"
+              >
+                Know About Us
+                <ArrowRight size={17} />
+              </NavLink>
             </div>
 
-            <div className="relative z-0 isolate h-[360px] sm:h-[420px] bg-white rounded-2xl overflow-hidden border border-[#1E3A2B]/10">
-              <MapContainer
-                center={[20.45, 84.9]}
-                zoom={7}
-                scrollWheelZoom={true}
-                className="w-full h-full"
-              >
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-
-                <Marker position={[20.2961, 85.8245]} icon={bhubaneswarIcon}>
-                  <Popup>
-                    <div className="p-1">
-                      <h3 className="font-bold text-[#1E3A2B]">Bhubaneswar</h3>
-
-                      <p className="text-sm text-gray-600 mt-1">
-                        Explore Odisha from here.
-                      </p>
-                    </div>
-                  </Popup>
-                </Marker>
-              </MapContainer>
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                [ShieldCheck, "Verified Vehicles", "Reliable travel options"],
+                [IndianRupee, "Transparent Pricing", "Know your costs"],
+                [Headset, "Travel Assistance", "Support when needed"],
+                [Leaf, "Local Experiences", "Discover Odisha"],
+              ].map(([Icon, title, description]) => (
+                <div
+                  key={title}
+                  className="rounded-2xl border border-gray-200 bg-white p-6"
+                >
+                  <Icon size={27} className="text-[#D96B43]" />
+                  <h3 className="mt-5 text-sm font-bold">{title}</h3>
+                  <p className="mt-2 text-xs text-gray-500">{description}</p>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="px-3 sm:px-5 lg:px-8 pb-12">
-        <div className="max-w-[1450px] mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+        {/* VEHICLE & SERVICE CATEGORIES */}
+
+        <section className="bg-[#EEF1EC] px-5 py-16 lg:px-10">
+          <div className="mx-auto max-w-[1320px]">
+            <div className="mb-9">
+              <p className="text-xs font-bold tracking-[.25em] text-[#D96B43]">
+                FIND YOUR EXPERIENCE
+              </p>
+
+              <h2 className="mt-3 text-3xl font-extrabold tracking-[-0.045em] sm:text-4xl">
                 Explore by Category
               </h2>
+            </div>
 
-              <p className="text-sm text-gray-500 mt-1">
-                Find what you need for your journey.
-              </p>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {categories.map((category) => {
+                const Icon = category.icon;
+
+                return (
+                  <NavLink
+                    to={category.route}
+                    key={category.name}
+                    className="group overflow-hidden rounded-2xl border border-gray-200 bg-white transition hover:-translate-y-1 hover:shadow-xl"
+                  >
+                    <div className="relative h-48 overflow-hidden">
+                      <img
+                        src={category.image}
+                        alt={category.name}
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                      />
+
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+
+                      <div className="absolute bottom-4 left-5 flex items-center gap-2 text-white">
+                        <Icon size={20} />
+                        <h3 className="text-xl font-bold">{category.name}</h3>
+                      </div>
+                    </div>
+
+                    <div className="p-5">
+                      <p className="text-xs font-bold text-[#D96B43]">
+                        {category.subtitle}
+                      </p>
+
+                      <p className="mt-3 min-h-[55px] text-xs leading-6 text-gray-500">
+                        {category.description}
+                      </p>
+
+                      <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
+                        <span className="text-[11px] font-semibold text-[#123B2D]">
+                          {category.tag}
+                        </span>
+
+                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#D96B43] text-white">
+                          <ArrowRight size={17} />
+                        </span>
+                      </div>
+                    </div>
+                  </NavLink>
+                );
+              })}
             </div>
           </div>
+        </section>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-            {exploreCategories.map((category) =>
-              category.title === "Solo Ride" ? (
+        {/* TOUR PACKAGES SECTION */}
+
+        <section className="bg-white px-5 py-16 lg:px-10">
+          <div className="mx-auto max-w-[1320px]">
+            <div className="flex flex-wrap items-end justify-between gap-5">
+              <div>
+                <p className="text-xs font-bold tracking-[.25em] text-[#D96B43]">
+                  CURATED TRAVEL EXPERIENCES
+                </p>
+
+                <h2 className="mt-3 text-3xl font-extrabold tracking-[-0.045em] sm:text-4xl">
+                  Explore Our Tour Packages
+                </h2>
+
+                <p className="mt-3 max-w-xl text-sm leading-7 text-gray-500">
+                  Discover handpicked destinations, exciting experiences and
+                  memorable journeys across Odisha.
+                </p>
+              </div>
+
+              <NavLink
+                to="/tours"
+                className="inline-flex items-center gap-2 rounded-full bg-[#123B2D] px-5 py-3 text-xs font-bold text-white transition hover:bg-[#D96B43]"
+              >
+                View All Tours
+                <ArrowRight size={16} />
+              </NavLink>
+            </div>
+
+            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {tourPackages.map((tour) => (
                 <NavLink
-                  key={category.title}
-                  to="/solo"
-                  className="bg-white rounded-xl overflow-hidden border border-[#1E3A2B]/10 shadow-sm hover:shadow-xl transition-shadow duration-300"
+                  to="/tours"
+                  key={tour.name}
+                  className="group overflow-hidden rounded-2xl border border-gray-200 bg-white transition hover:-translate-y-1 hover:shadow-xl"
                 >
-                  <div className="aspect-[4/3] w-full overflow-hidden bg-gray-100">
+                  <div className="relative h-[220px] overflow-hidden">
                     <img
-                      src={category.image}
-                      alt={category.title}
-                      loading="lazy"
-                      decoding="async"
-                      className="block w-full h-full object-cover object-center"
+                      src={tour.image}
+                      alt={tour.name}
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     />
+
+                    <div className="absolute left-4 top-4 rounded-full bg-white px-3 py-2 text-[10px] font-bold text-[#123B2D] shadow">
+                      {tour.category}
+                    </div>
+
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                   </div>
 
-                  <div className="p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <h3 className="text-lg font-bold text-[#1E3A2B] tracking-tight">
-                          {category.title}
-                        </h3>
+                  <div className="p-5">
+                    <p className="flex items-center gap-1 text-xs text-gray-500">
+                      <MapPin size={14} className="text-[#D96B43]" />
+                      {tour.location}
+                    </p>
 
-                        <p className="text-sm font-medium text-[#D96B43] mt-1">
-                          {category.type}
-                        </p>
+                    <h3 className="mt-3 text-lg font-extrabold text-[#123B2D]">
+                      {tour.name}
+                    </h3>
 
-                        <p className="text-xs text-gray-500 mt-1.5 leading-5">
-                          {category.details}
-                        </p>
-                      </div>
+                    <p className="mt-3 min-h-[65px] text-xs leading-6 text-gray-500">
+                      {tour.description}
+                    </p>
 
-                      <span className="flex-shrink-0 w-10 h-10 rounded-full bg-[#D96B43] text-white text-lg font-medium flex items-center justify-center shadow-sm">
-                        →
+                    <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-4">
+                      <span className="flex items-center gap-2 text-xs font-semibold text-gray-600">
+                        <CalendarDays size={15} className="text-[#D96B43]" />
+                        {tour.duration}
+                      </span>
+
+                      <span className="flex items-center gap-1 text-xs font-bold text-[#D96B43]">
+                        Explore <ArrowRight size={15} />
                       </span>
                     </div>
                   </div>
                 </NavLink>
-              ) : (
-                <div
-                  key={category.title}
-                  className="bg-white rounded-xl overflow-hidden border border-[#1E3A2B]/10 shadow-sm hover:shadow-xl transition-shadow duration-300"
-                >
-                  <div className="aspect-[4/3] w-full overflow-hidden bg-gray-100">
-                    <img
-                      src={category.image}
-                      alt={category.title}
-                      loading="lazy"
-                      decoding="async"
-                      className="block w-full h-full object-cover object-center"
-                    />
-                  </div>
-
-                  <div className="p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <h3 className="text-lg font-bold text-[#1E3A2B] tracking-tight">
-                          {category.title}
-                        </h3>
-
-                        <p className="text-sm font-medium text-[#D96B43] mt-1">
-                          {category.type}
-                        </p>
-
-                        <p className="text-xs text-gray-500 mt-1.5 leading-5">
-                          {category.details}
-                        </p>
-                      </div>
-
-                      <button className="flex-shrink-0 w-10 h-10 rounded-full bg-[#D96B43] hover:bg-[#c55c39] text-white text-lg font-medium transition shadow-sm">
-                        →
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ),
-            )}
-          </div>
-        </div>
-      </section>
-
-      <section className="px-3 sm:px-5 lg:px-8 pb-12">
-        <div className="max-w-[1450px] mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-6">
-            Offers <span className="text-[#D96B43]">Live</span>
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {offers.map((offer) => (
-              <div
-                key={offer.title}
-                className="relative h-60 sm:h-72 rounded-2xl overflow-hidden"
-              >
-                <img
-                  src={offer.image}
-                  alt={offer.title}
-                  loading="lazy"
-                  decoding="async"
-                  className="block w-full h-full object-cover object-center"
-                />
-
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1E3A2B]/85 via-[#1E3A2B]/35 to-transparent" />
-
-                <div className="absolute inset-0 p-5 sm:p-6 flex flex-col justify-between text-white">
-                  <div>
-                    <h3 className="text-xl sm:text-2xl font-bold tracking-tight">
-                      {offer.title}
-                    </h3>
-
-                    <p className="text-[#F4EFEA]/90 mt-1">{offer.subtitle}</p>
-                  </div>
-
-                  <button className="w-fit px-4 py-2.5 bg-[#D96B43] hover:bg-[#c55c39] rounded-lg text-sm font-semibold transition">
-                    {offer.button} →
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="px-3 sm:px-5 lg:px-8 pb-12">
-        <div className="max-w-[1450px] mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-6">
-            Hidden Visiting Places
-          </h2>
-
-          <div className="relative rounded-2xl overflow-hidden bg-[#1E3A2B] min-h-[620px] sm:min-h-[470px]">
-            <img
-              src="/images/hidden-odisha.jpg"
-              alt="Hidden Odisha"
-              loading="lazy"
-              decoding="async"
-              className="absolute inset-0 w-full h-full object-cover object-center"
-            />
-
-            <div className="absolute inset-0 bg-gradient-to-r from-[#1E3A2B]/95 via-[#1E3A2B]/75 to-[#1E3A2B]/30" />
-
-            <div className="relative z-10 p-5 sm:p-8 lg:p-10 text-white">
-              <p className="text-[#D96B43] text-xs sm:text-sm font-semibold uppercase tracking-[0.15em]">
-                Discover
-              </p>
-
-              <h2 className="text-2xl sm:text-4xl font-bold mt-1 tracking-tight">
-                Odisha's Hidden Gems
-              </h2>
-
-              <p className="text-sm sm:text-base text-[#F4EFEA]/85 mt-3 max-w-md leading-6">
-                Share reels, discover hidden places and win exciting gigs.
-              </p>
-
-              <button className="mt-5 px-5 py-2.5 bg-[#D96B43] hover:bg-[#c55c39] rounded-lg text-sm font-semibold transition">
-                Share Your Reel →
-              </button>
+              ))}
             </div>
 
-            <div className="relative z-10 px-4 pb-5 sm:absolute sm:right-4 sm:bottom-4 sm:left-auto sm:w-[60%] sm:px-0 sm:pb-0">
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                {hiddenPlaces.map((place) => (
-                  <div
-                    key={place.title}
-                    className="relative h-36 sm:h-40 rounded-xl overflow-hidden border border-white/40 shadow-xl"
+            <div className="mt-10 text-center">
+              <NavLink
+                to="/tours"
+                className="inline-flex items-center gap-3 rounded-xl bg-[#D96B43] px-8 py-4 text-sm font-bold text-white transition hover:bg-[#C65A35]"
+              >
+                Discover All Tour Packages
+                <ArrowRight size={18} />
+              </NavLink>
+            </div>
+          </div>
+        </section>
+
+        {/* OFFERS */}
+
+        <section className="px-5 py-16 lg:px-10">
+          <div className="mx-auto max-w-[1320px]">
+            <p className="text-xs font-bold tracking-[.25em] text-[#D96B43]">
+              EXCLUSIVE DEALS
+            </p>
+
+            <h2 className="mt-3 text-3xl font-extrabold tracking-[-0.045em] sm:text-4xl">
+              Special Offers for Your Journey
+            </h2>
+
+            <div className="mt-9 grid gap-6 md:grid-cols-3">
+              {offers.map((offer) => (
+                <div
+                  key={offer.title}
+                  className="group relative h-[270px] overflow-hidden rounded-2xl bg-[#123B2D]"
+                >
+                  <img
+                    src={offer.image}
+                    alt={offer.title}
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  />
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+
+                  <div className="absolute bottom-0 p-6 text-white">
+                    <span className="rounded-full bg-[#D96B43] px-3 py-1 text-[10px] font-bold">
+                      {offer.discount}
+                    </span>
+
+                    <h3 className="mt-4 text-2xl font-bold">{offer.title}</h3>
+
+                    <p className="mt-2 text-xs text-white/80">
+                      {offer.subtitle}
+                    </p>
+
+                    <NavLink
+                      to="/offers"
+                      className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-[#F4A27B]"
+                    >
+                      Explore Offer
+                      <ArrowRight size={16} />
+                    </NavLink>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* HIDDEN GEMS */}
+
+        <section className="px-5 pb-16 lg:px-10">
+          <div className="mx-auto max-w-[1320px] rounded-3xl bg-[#123B2D] p-8 text-white sm:p-12">
+            <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
+              <div>
+                <p className="text-xs font-bold tracking-[.25em] text-[#F4A27B]">
+                  BEYOND THE USUAL
+                </p>
+
+                <h2 className="mt-4 text-4xl font-extrabold tracking-[-0.045em]">
+                  Discover Odisha's
+                  <span className="block text-[#F07850]">Hidden Gems.</span>
+                </h2>
+
+                <p className="mt-5 max-w-lg text-sm leading-7 text-white/75">
+                  Find beautiful hidden destinations, peaceful landscapes and
+                  unforgettable road trip experiences.
+                </p>
+
+                <NavLink
+                  to="/tours"
+                  className="mt-7 inline-flex items-center gap-2 rounded-full bg-[#D96B43] px-6 py-3 text-sm font-bold"
+                >
+                  Explore Odisha Tours
+                  <ArrowRight size={17} />
+                </NavLink>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  ["/images/deomali.jpeg", "Deomali Hills"],
+                  ["/images/chilika.jpeg", "Chilika Lake"],
+                  ["/images/simlipal.jpg", "Similipal"],
+                  ["/images/tikarpada.jpeg", "Tikarapada"],
+                ].map(([image, title]) => (
+                  <NavLink
+                    to="/tours"
+                    key={title}
+                    className="relative h-36 overflow-hidden rounded-xl sm:h-44"
                   >
                     <img
-                      src={place.image}
-                      alt={place.title}
-                      loading="lazy"
-                      decoding="async"
-                      className="block w-full h-full object-cover object-center"
+                      src={image}
+                      alt={title}
+                      className="h-full w-full object-cover transition duration-500 hover:scale-105"
                     />
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
 
-                    <span className="absolute bottom-2 left-2 right-1 text-xs sm:text-sm text-white font-semibold">
-                      {place.title}
-                    </span>
-                  </div>
+                    <h3 className="absolute bottom-3 left-3 text-sm font-bold">
+                      {title}
+                    </h3>
+                  </NavLink>
                 ))}
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="px-3 sm:px-5 lg:px-8 pb-12">
-        <div className="max-w-[1450px] mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-              Frequently Asked <span className="text-[#D96B43]">Questions</span>
-            </h2>
-          </div>
+        {/* FAQ */}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              "What documents are required to rent a car?",
-              "Can I take the car to outstation locations?",
-              "Is there a security deposit?",
-              "What happens in case of a breakdown?",
-            ].map((question) => (
-              <div
-                key={question}
-                className="bg-white border border-[#1E3A2B]/10 rounded-xl px-5 py-5 flex items-center justify-between shadow-sm"
+        <section className="bg-[#EEF1EC] px-5 py-16 lg:px-10">
+          <div className="mx-auto grid max-w-[1250px] gap-10 lg:grid-cols-[.7fr_1.3fr]">
+            <div>
+              <p className="text-xs font-bold tracking-[.25em] text-[#D96B43]">
+                NEED HELP?
+              </p>
+
+              <h2 className="mt-4 text-4xl font-extrabold tracking-[-0.045em]">
+                Frequently Asked
+                <span className="block text-[#123B2D]">Questions.</span>
+              </h2>
+
+              <p className="mt-5 text-sm leading-7 text-gray-500">
+                Have questions about bookings or travelling? Find answers here.
+              </p>
+
+              <NavLink
+                to="/contact"
+                className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#D96B43]"
               >
-                <span className="text-sm">{question}</span>
+                Contact Support
+                <ArrowRight size={17} />
+              </NavLink>
+            </div>
 
-                <span className="text-xl text-[#1E3A2B]">+</span>
-              </div>
-            ))}
+            <div className="space-y-3">
+              {faqs.map((faq) => (
+                <details
+                  key={faq.question}
+                  className="group rounded-xl border border-gray-200 bg-white p-5"
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-[#123B2D]">
+                    {faq.question}
+                    <span className="text-xl text-[#D96B43] transition group-open:rotate-45">
+                      +
+                    </span>
+                  </summary>
+
+                  <p className="mt-4 text-xs leading-6 text-gray-500">
+                    {faq.answer}
+                  </p>
+                </details>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+
+        {/* FOOTER */}
+      </div>
     </main>
   );
 };

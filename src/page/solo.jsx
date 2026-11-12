@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { Bike, CarFront, Car, Truck } from "lucide-react";
 
 const odishaLocations = [
   "Bhubaneswar",
@@ -299,28 +300,28 @@ const vehicles = [
 
 const categoryData = {
   bike: {
-    icon: "🏍️",
+    icon: Bike,
     title: "Two Wheeler",
     subtitle: "Most Popular",
     types: ["Bike", "Scooter"],
     description: "Popular bikes and scooters for solo travelers",
   },
   hatchback: {
-    icon: "🚗",
+    icon: CarFront,
     title: "Hatchback",
     subtitle: "Budget Friendly",
     types: ["Hatchback"],
     description: "Affordable hatchback cars for your solo trip",
   },
   sedan: {
-    icon: "🚘",
+    icon: Car,
     title: "Sedan",
     subtitle: "Comfort Ride",
     types: ["Sedan"],
     description: "Comfortable sedan cars for your journey",
   },
   suv: {
-    icon: "🚙",
+    icon: Truck,
     title: "SUV",
     subtitle: "Long Drive",
     types: ["SUV"],
@@ -334,26 +335,21 @@ const SoloRide = () => {
   const [showVehicles, setShowVehicles] = useState(false);
 
   const [activeCategory, setActiveCategory] = useState("bike");
-
   const [selectedTypes, setSelectedTypes] = useState(categoryData.bike.types);
-
   const [selectedFuels, setSelectedFuels] = useState([]);
 
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(3000);
 
   const [appliedTypes, setAppliedTypes] = useState(categoryData.bike.types);
-
   const [appliedFuels, setAppliedFuels] = useState([]);
-
   const [appliedMinPrice, setAppliedMinPrice] = useState(0);
   const [appliedMaxPrice, setAppliedMaxPrice] = useState(3000);
 
   const [sortBy, setSortBy] = useState("popularity");
-
+  const navigate = useNavigate();
   const handleLocation = (e) => {
     const value = e.target.value;
-
     setLocation(value);
 
     if (odishaLocations.includes(value)) {
@@ -373,40 +369,32 @@ const SoloRide = () => {
 
   const handleCategoryChange = (category) => {
     setActiveCategory(category);
-
     const categoryInfo = categoryData[category];
 
     setSelectedTypes(categoryInfo.types);
     setAppliedTypes(categoryInfo.types);
-
     setSelectedFuels([]);
     setAppliedFuels([]);
-
     setMinPrice(0);
     setMaxPrice(3000);
-
     setAppliedMinPrice(0);
     setAppliedMaxPrice(3000);
   };
 
   const handleTypeChange = (type) => {
-    setSelectedTypes((previous) => {
-      if (previous.includes(type)) {
-        return previous.filter((item) => item !== type);
-      }
-
-      return [...previous, type];
-    });
+    setSelectedTypes((previous) =>
+      previous.includes(type)
+        ? previous.filter((item) => item !== type)
+        : [...previous, type],
+    );
   };
 
   const handleFuelChange = (fuel) => {
-    setSelectedFuels((previous) => {
-      if (previous.includes(fuel)) {
-        return previous.filter((item) => item !== fuel);
-      }
-
-      return [...previous, fuel];
-    });
+    setSelectedFuels((previous) =>
+      previous.includes(fuel)
+        ? previous.filter((item) => item !== fuel)
+        : [...previous, fuel],
+    );
   };
 
   const applyFilters = () => {
@@ -421,26 +409,39 @@ const SoloRide = () => {
 
     setSelectedTypes(types);
     setAppliedTypes(types);
-
     setSelectedFuels([]);
     setAppliedFuels([]);
-
     setMinPrice(0);
     setMaxPrice(3000);
-
     setAppliedMinPrice(0);
     setAppliedMaxPrice(3000);
   };
 
+  const Handeling = async (vehicle) => {
+    const response = await fetch(`http://localhost:8000/api/v1/users/getuser`, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      navigate("/Booking", {
+        state: { vehicle },
+      });
+    } else {
+      navigate("/login", {
+        state: {
+          from: "/Booking",
+          vehicle,
+        },
+      });
+    }
+  };
   const filteredVehicles = useMemo(() => {
-    let result = vehicles.filter((vehicle) => {
+    const result = vehicles.filter((vehicle) => {
       const categoryMatch = vehicle.category === activeCategory;
-
       const typeMatch = appliedTypes.includes(vehicle.type);
-
       const priceMatch =
         vehicle.price >= appliedMinPrice && vehicle.price <= appliedMaxPrice;
-
       const fuelMatch =
         appliedFuels.length === 0 || appliedFuels.includes(vehicle.fuel);
 
@@ -449,13 +450,9 @@ const SoloRide = () => {
 
     if (sortBy === "priceLow") {
       result.sort((a, b) => a.price - b.price);
-    }
-
-    if (sortBy === "priceHigh") {
+    } else if (sortBy === "priceHigh") {
       result.sort((a, b) => b.price - a.price);
-    }
-
-    if (sortBy === "popularity") {
+    } else {
       result.sort((a, b) => b.popularity - a.popularity);
     }
 
@@ -472,189 +469,156 @@ const SoloRide = () => {
   const currentCategory = categoryData[activeCategory];
 
   return (
-    <div className="min-h-screen bg-[#F4EFEA] text-[#1E3A2B]">
-      <section className="relative h-[350px] sm:h-[430px] overflow-hidden">
+    <div className="min-h-screen w-full overflow-x-hidden bg-white text-[#123629]">
+      {/* Traditional Odisha hero banner */}
+      <section className="relative w-full overflow-hidden border-b-[5px] border-[#C77B35] bg-white">
         <img
-          src="/images/solo_banner.png"
-          alt="Solo Ride"
-          className="absolute inset-0 w-full h-full object-cover"
+          src="/images/Hero_solo.jpeg"
+          alt="Solo Ride - Explore Odisha"
+          className="block h-auto w-full object-contain"
         />
-
-        <div className="absolute inset-0 bg-gradient-to-r from-[#1E3A2B]/95 via-[#1E3A2B]/10 to-transparent" />
-
-        <div className="relative z-10 max-w-[1450px] mx-auto px-5 sm:px-8 pt-16 sm:pt-24">
-          {/* <p className="text-white/80 text-sm">
-            Home <span className="mx-2">›</span> Solo Ride
-          </p>
-
-          <h1 className="mt-5 text-4xl sm:text-5xl lg:text-6xl font-bold text-white">
-            Solo <span className="text-[#D96B43]">Ride</span>
-          </h1> */}
-        </div>
       </section>
 
-      <section className="relative z-20 px-4 sm:px-6 lg:px-8 -mt-16">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="bg-white rounded-2xl shadow-xl p-5 sm:p-6">
-            <div className="flex flex-col lg:flex-row lg:items-end gap-4">
-              <div className="flex-1">
-                <label className="block text-sm font-semibold mb-2">
+      {/* Responsive location selector */}
+      <section className="relative z-20 -mt-5 w-full min-w-0 px-4 sm:-mt-8 sm:px-6 lg:-mt-10 lg:px-8">
+        <div className="mx-auto w-full min-w-0 max-w-[1250px]">
+          <div className="w-full min-w-0 overflow-hidden rounded-2xl border border-[#D9B77A] bg-white p-4 shadow-[0_12px_30px_rgba(22,48,35,0.12)] sm:p-6">
+            <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_175px_minmax(300px,0.8fr)] lg:items-end">
+              <div className="min-w-0">
+                <label
+                  htmlFor="starting-location"
+                  className="mb-2 block text-sm font-semibold text-[#123629]"
+                >
                   📍 Where are you starting from?
                 </label>
 
                 <select
+                  id="starting-location"
                   value={location}
                   onChange={handleLocation}
-                  className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-[#F4EFEA] outline-none focus:border-[#D96B43]"
+                  className="block h-12 w-full min-w-0 rounded-xl border border-[#D8C9B1] bg-white px-4 text-sm outline-none transition focus:border-[#C75B2A] focus:ring-2 focus:ring-[#C75B2A]/20"
                 >
                   <option value="">Select City / District</option>
-
-                  <optgroup label="Odisha">
-                    {odishaLocations.map((place) => (
-                      <option key={place} value={place}>
-                        {place}
-                      </option>
-                    ))}
-                  </optgroup>
+                  {odishaLocations.map((place) => (
+                    <option key={place} value={place}>
+                      {place}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <button
+                type="button"
                 onClick={() => {
                   if (odishaLocations.includes(location)) {
                     setServiceAvailable(true);
                     setShowVehicles(true);
                   }
                 }}
-                className="h-12 lg:w-44 bg-[#D96B43] hover:bg-[#c55c39] text-white rounded-xl font-semibold transition"
+                className="h-12 w-full rounded-xl bg-[#C9572B] px-5 font-semibold text-white transition hover:bg-[#A94320]"
               >
                 Continue →
               </button>
 
-              <div className="hidden md:grid grid-cols-3 gap-5 lg:w-[380px]">
-                <div className="text-center border-l border-gray-200">
-                  <div className="text-xl">🧭</div>
-
-                  <p className="text-xs font-semibold mt-1">Explore</p>
-
-                  <p className="text-[11px] text-gray-500">Tourist Places</p>
+              <div className="grid min-w-0 grid-cols-3 overflow-hidden rounded-xl border border-[#E4D5BB] bg-white">
+                <div className="flex min-w-0 flex-col items-center justify-center px-1 py-3 text-center">
+                  <span className="text-xl">🧭</span>
+                  <p className="mt-1 text-xs font-semibold">Explore</p>
+                  <p className="mt-1 text-[10px] text-gray-500 sm:text-xs">
+                    Tourist Places
+                  </p>
                 </div>
 
-                <div className="text-center border-l border-gray-200">
-                  <div className="text-xl">🚗</div>
-
-                  <p className="text-xs font-semibold mt-1">Find Best</p>
-
-                  <p className="text-[11px] text-gray-500">Vehicles</p>
+                <div className="flex min-w-0 flex-col items-center justify-center border-x border-[#E4D5BB] px-1 py-3 text-center">
+                  <span className="text-xl">🚘</span>
+                  <p className="mt-1 text-xs font-semibold">Find Best</p>
+                  <p className="mt-1 text-[10px] text-gray-500 sm:text-xs">
+                    Vehicles
+                  </p>
                 </div>
 
-                <div className="text-center border-l border-gray-200">
-                  <div className="text-xl">🛡️</div>
-
-                  <p className="text-xs font-semibold mt-1">Safe</p>
-
-                  <p className="text-[11px] text-gray-500">Reliable Travel</p>
+                <div className="flex min-w-0 flex-col items-center justify-center px-1 py-3 text-center">
+                  <span className="text-xl">🛡️</span>
+                  <p className="mt-1 text-xs font-semibold">Safe</p>
+                  <p className="mt-1 text-[10px] text-gray-500 sm:text-xs">
+                    Reliable Travel
+                  </p>
                 </div>
               </div>
             </div>
-
-            {location && !serviceAvailable && (
-              <div className="mt-5 p-4 sm:p-5 rounded-xl bg-red-50 border border-red-200">
-                <div className="flex items-start gap-3">
-                  <div className="text-2xl">⚠️</div>
-
-                  <div className="flex-1">
-                    <h3 className="font-bold text-red-700">
-                      Sorry, no services available
-                    </h3>
-
-                    <p className="text-sm text-red-600 mt-1">
-                      We currently provide vehicle rental services only within
-                      Odisha.
-                    </p>
-
-                    <button
-                      onClick={changeLocation}
-                      className="mt-3 px-4 py-2 bg-[#D96B43] hover:bg-[#c55c39] text-white rounded-lg text-sm font-semibold transition"
-                    >
-                      Select Odisha Location
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </section>
 
+      {/* Tourist destinations */}
       {!showVehicles && (
-        <section className="px-4 sm:px-6 lg:px-8 pt-12 pb-14">
-          <div className="max-w-[1450px] mx-auto">
-            <div className="flex items-end justify-between gap-4 mb-6">
+        <section className="bg-white px-4 pb-14 pt-10 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[1450px]">
+            <div className="mb-6 flex items-end justify-between gap-4">
               <div>
-                <h2 className="text-2xl sm:text-3xl font-bold">
+                <p className="mb-2 text-xs uppercase tracking-[0.2em] text-[#8A6A3C]">
+                  Explore the beauty
+                </p>
+                <h2 className="text-2xl font-bold sm:text-3xl">
                   Popular Tourist Places{" "}
-                  <span className="text-[#D96B43]">in Odisha</span>
+                  <span className="text-[#C9572B]">in Odisha</span>
                 </h2>
-
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="mt-2 text-sm text-gray-500">
                   Discover beautiful destinations around Odisha before choosing
                   your ride.
                 </p>
               </div>
 
-              <button className="hidden sm:block text-sm font-semibold text-[#D96B43]">
+              <button className="hidden text-sm font-semibold text-[#C9572B] sm:block">
                 View All Places →
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {touristPlaces.map((place) => (
                 <div
                   key={place.title}
-                  className="bg-white rounded-2xl overflow-hidden border border-[#1E3A2B]/10 shadow-sm hover:shadow-lg transition"
+                  className="overflow-hidden rounded-2xl border border-[#D9C8AC] bg-white shadow-sm transition hover:shadow-md"
                 >
                   <div className="aspect-[16/10] overflow-hidden">
                     <img
                       src={place.image}
                       alt={place.title}
-                      className="w-full h-full object-cover"
+                      className="h-full w-full object-cover"
                       loading="lazy"
                     />
                   </div>
 
-                  <div className="p-4">
-                    <div className="flex items-center justify-between gap-2">
-                      <div>
-                        <h3 className="font-bold">{place.title}</h3>
-
-                        <p className="text-xs text-gray-500 mt-1">
-                          {place.category}
-                        </p>
-                      </div>
-
-                      <button className="w-9 h-9 rounded-full bg-[#D96B43] text-white">
-                        →
-                      </button>
+                  <div className="flex items-center justify-between gap-2 p-4">
+                    <div>
+                      <h3 className="font-semibold">{place.title}</h3>
+                      <p className="mt-1 text-xs text-gray-500">
+                        {place.category}
+                      </p>
                     </div>
+                    <button
+                      aria-label={`Explore ${place.title}`}
+                      className="h-9 w-9 shrink-0 rounded-full bg-[#C9572B] text-white transition hover:bg-[#A94320]"
+                    >
+                      →
+                    </button>
                   </div>
                 </div>
               ))}
 
-              <div className="bg-[#DDE9DF] rounded-2xl p-6 flex flex-col justify-center">
-                <div className="text-4xl mb-4">📍</div>
-
-                <h3 className="text-xl font-bold">
+              <div className="flex flex-col justify-center rounded-2xl border border-[#C99A5A] bg-white p-6 text-[#123629]">
+                <div className="mb-4 text-3xl">📍</div>
+                <h3 className="text-xl font-semibold">
                   Select a location to see available vehicles
                 </h3>
-
-                <p className="text-sm text-gray-600 mt-2">
+                <p className="mt-2 text-sm text-gray-500">
                   Bikes, scooters, cars and SUVs available near you.
                 </p>
-
                 <button
-                  onClick={() => document.querySelector("select")?.focus()}
-                  className="mt-5 w-fit px-4 py-2.5 bg-[#1E3A2B] text-white rounded-lg text-sm font-semibold"
+                  onClick={() =>
+                    document.getElementById("starting-location")?.focus()
+                  }
+                  className="mt-5 w-fit rounded-lg bg-[#C9572B] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#A94320]"
                 >
                   Select Location →
                 </button>
@@ -664,75 +628,137 @@ const SoloRide = () => {
         </section>
       )}
 
+      {/* Vehicles and filters */}
       {showVehicles && serviceAvailable && (
-        <section className="px-4 sm:px-6 lg:px-8 py-10">
-          <div className="max-w-[1450px] mx-auto">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+        <section className="w-full overflow-hidden border-y-4 border-[#C77B35] bg-white px-4 py-10 text-[#123629] sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[1450px]">
+            <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
                 <p className="text-sm text-gray-500">
                   Home <span className="mx-2">›</span> Solo Ride
                 </p>
-
-                <h2 className="text-3xl sm:text-4xl font-bold mt-2">
+                <h2 className="mt-2 text-3xl font-bold sm:text-4xl">
                   Solo Ride
                 </h2>
-
-                <p className="text-lg font-semibold mt-1">
+                <p className="mt-1 text-lg font-semibold">
                   Vehicles available in{" "}
-                  <span className="text-[#D96B43]">{location}</span>
+                  <span className="text-[#C9572B]">{location}</span>
                 </p>
               </div>
 
               <button
                 onClick={changeLocation}
-                className="w-fit px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold hover:border-[#D96B43] transition"
+                className="w-fit rounded-lg border border-[#D9B77A] bg-white px-4 py-2 text-sm font-semibold text-[#123629] transition hover:border-[#C9572B]"
               >
                 📍 {location} · Change
               </button>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-[#1E3A2B]/10 p-2 mb-8">
-              <div className="grid grid-cols-2 md:grid-cols-4">
-                {Object.entries(categoryData).map(([key, data]) => (
-                  <button
-                    key={key}
-                    onClick={() => handleCategoryChange(key)}
-                    className={`p-4 rounded-xl text-left transition ${
-                      activeCategory === key
-                        ? "bg-[#D96B43] text-white"
-                        : "hover:bg-[#F4EFEA]"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{data.icon}</span>
+            {/* Vehicle categories */}
+            <div className="mb-8 overflow-hidden rounded-2xl border border-[#D8C6A5] bg-white">
+              <div className="h-1 w-full bg-[#B86A3B]" />
 
-                      <div>
-                        <p className="font-bold text-sm">{data.title}</p>
+              <div className="p-4 sm:p-6">
+                <div className="mb-5 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9A7045]">
+                      Explore Odisha at your pace
+                    </p>
+                    <h3 className="mt-1 text-xl font-semibold text-[#173A2D] sm:text-2xl">
+                      Choose Your Vehicle
+                    </h3>
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    Select a category to explore available vehicles.
+                  </p>
+                </div>
 
-                        <p
-                          className={`text-xs mt-1 ${
-                            activeCategory === key
-                              ? "text-white/80"
-                              : "text-gray-500"
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  {Object.entries(categoryData).map(([key, data]) => {
+                    const CategoryIcon = data.icon;
+                    const isActive = activeCategory === key;
+
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => handleCategoryChange(key)}
+                        aria-pressed={isActive}
+                        className={`group flex min-h-[112px] items-center gap-4 rounded-xl border p-4 text-left transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9572B] focus-visible:ring-offset-2 ${
+                          isActive
+                            ? "border-[#B86A3B] bg-white shadow-sm"
+                            : "border-[#E1D7C5] bg-white hover:border-[#BBA17A]"
+                        }`}
+                      >
+                        <div
+                          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg ${
+                            isActive
+                              ? "bg-[#F1EADF] text-[#173A2D]"
+                              : "border border-[#E4D9C7] bg-white text-[#345343] group-hover:bg-[#F8F3E9]"
                           }`}
                         >
-                          {data.subtitle}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                          <CategoryIcon
+                            size={25}
+                            strokeWidth={1.6}
+                            aria-hidden="true"
+                          />
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <h4 className="text-[15px] font-semibold text-[#173A2D]">
+                            {data.title}
+                          </h4>
+                          <p className="mt-1 text-sm text-gray-500">
+                            {data.subtitle}
+                          </p>
+                          <div
+                            className={`mt-3 h-[2px] rounded-full transition-all duration-200 ${
+                              isActive
+                                ? "w-10 bg-[#B86A3B]"
+                                : "w-5 bg-[#D8C6A5] group-hover:w-8"
+                            }`}
+                          />
+                        </div>
+
+                        <div
+                          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
+                            isActive
+                              ? "border-[#173A2D] bg-[#173A2D] text-white"
+                              : "border-[#D5CBB9] text-transparent"
+                          }`}
+                        >
+                          {isActive && (
+                            <svg
+                              viewBox="0 0 20 20"
+                              fill="none"
+                              className="h-3.5 w-3.5"
+                              aria-hidden="true"
+                            >
+                              <path
+                                d="m4 10 4 4 8-8"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[250px_1fr] gap-6">
-              <aside className="bg-white rounded-2xl p-5 border border-[#1E3A2B]/10 h-fit lg:sticky lg:top-5">
+            {/* Filters and vehicle listings */}
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[250px_1fr]">
+              <aside className="h-fit rounded-2xl border border-[#D9B77A] bg-white p-5 text-[#123629] shadow-sm lg:sticky lg:top-5">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-lg">Filter Vehicles</h3>
-
+                  <h3 className="text-lg font-bold">Filter Vehicles</h3>
                   <button
                     onClick={clearFilters}
-                    className="text-xs font-semibold text-[#D96B43] hover:underline"
+                    className="text-xs font-semibold text-[#C9572B] hover:underline"
                   >
                     Clear
                   </button>
@@ -740,19 +766,17 @@ const SoloRide = () => {
 
                 <div className="mt-6">
                   <p className="text-sm font-semibold">Vehicle Type</p>
-
                   {currentCategory.types.map((type) => (
                     <label
                       key={type}
-                      className="flex items-center gap-2 mt-3 text-sm text-gray-600 cursor-pointer"
+                      className="mt-3 flex cursor-pointer items-center gap-2 text-sm text-gray-600"
                     >
                       <input
                         type="checkbox"
                         checked={selectedTypes.includes(type)}
                         onChange={() => handleTypeChange(type)}
-                        className="w-4 h-4 accent-[#D96B43]"
+                        className="h-4 w-4 accent-[#C9572B]"
                       />
-
                       {type}
                     </label>
                   ))}
@@ -761,8 +785,7 @@ const SoloRide = () => {
                 <div className="mt-7">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-semibold">Price Range</p>
-
-                    <span className="text-sm font-bold text-[#D96B43]">
+                    <span className="text-sm font-bold text-[#C9572B]">
                       ₹{minPrice} - ₹{maxPrice}
                     </span>
                   </div>
@@ -776,14 +799,10 @@ const SoloRide = () => {
                       value={minPrice}
                       onChange={(e) => {
                         const value = Number(e.target.value);
-
-                        if (value <= maxPrice) {
-                          setMinPrice(value);
-                        }
+                        if (value <= maxPrice) setMinPrice(value);
                       }}
-                      className="w-full accent-[#1E3A2B]"
+                      className="w-full accent-[#123629]"
                     />
-
                     <input
                       type="range"
                       min="0"
@@ -792,12 +811,9 @@ const SoloRide = () => {
                       value={maxPrice}
                       onChange={(e) => {
                         const value = Number(e.target.value);
-
-                        if (value >= minPrice) {
-                          setMaxPrice(value);
-                        }
+                        if (value >= minPrice) setMaxPrice(value);
                       }}
-                      className="w-full accent-[#D96B43]"
+                      className="w-full accent-[#C9572B]"
                     />
                   </div>
 
@@ -806,36 +822,31 @@ const SoloRide = () => {
                     <span>₹3,000</span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 mt-3">
-                    <div className="border rounded-lg px-3 py-2">
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <div className="rounded-lg border border-[#D9C8AC] px-3 py-2">
                       <p className="text-[10px] text-gray-400">Minimum</p>
-
-                      <p className="font-semibold text-sm">₹{minPrice}</p>
+                      <p className="text-sm font-semibold">₹{minPrice}</p>
                     </div>
-
-                    <div className="border rounded-lg px-3 py-2">
+                    <div className="rounded-lg border border-[#D9C8AC] px-3 py-2">
                       <p className="text-[10px] text-gray-400">Maximum</p>
-
-                      <p className="font-semibold text-sm">₹{maxPrice}</p>
+                      <p className="text-sm font-semibold">₹{maxPrice}</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="mt-7">
                   <p className="text-sm font-semibold">Fuel Type</p>
-
                   {["Petrol", "Diesel", "Electric"].map((fuel) => (
                     <label
                       key={fuel}
-                      className="flex items-center gap-2 mt-3 text-sm text-gray-600 cursor-pointer"
+                      className="mt-3 flex cursor-pointer items-center gap-2 text-sm text-gray-600"
                     >
                       <input
                         type="checkbox"
                         checked={selectedFuels.includes(fuel)}
                         onChange={() => handleFuelChange(fuel)}
-                        className="w-4 h-4 accent-[#D96B43]"
+                        className="h-4 w-4 accent-[#C9572B]"
                       />
-
                       {fuel}
                     </label>
                   ))}
@@ -843,20 +854,19 @@ const SoloRide = () => {
 
                 <button
                   onClick={applyFilters}
-                  className="w-full mt-7 h-11 bg-[#D96B43] hover:bg-[#c55c39] text-white rounded-lg font-semibold transition"
+                  className="mt-7 h-11 w-full rounded-lg bg-[#C9572B] font-semibold text-white transition hover:bg-[#A94320]"
                 >
                   Apply Filters
                 </button>
               </aside>
 
-              <div>
-                <div className="flex items-center justify-between mb-5">
+              <div className="min-w-0">
+                <div className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                   <div>
                     <h2 className="text-2xl font-bold">
                       {currentCategory.title}
                     </h2>
-
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="mt-1 text-sm text-gray-500">
                       {currentCategory.description}
                     </p>
                   </div>
@@ -864,66 +874,58 @@ const SoloRide = () => {
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none"
+                    className="rounded-lg border border-[#D9C8AC] bg-white px-3 py-2 text-sm text-[#123629] outline-none"
                   >
                     <option value="popularity">Sort by: Popularity</option>
-
                     <option value="priceLow">Price: Low to High</option>
-
                     <option value="priceHigh">Price: High to Low</option>
                   </select>
                 </div>
 
-                <div className="flex items-center justify-between mb-4">
+                <div className="mb-4 flex items-center justify-between">
                   <p className="text-sm text-gray-500">
                     Showing{" "}
-                    <span className="font-semibold text-[#1E3A2B]">
+                    <span className="font-semibold text-[#C9572B]">
                       {filteredVehicles.length}
                     </span>{" "}
                     vehicles
                   </p>
-
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-500">
                     ₹{appliedMinPrice} - ₹{appliedMaxPrice}
                   </p>
                 </div>
 
                 {filteredVehicles.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     {filteredVehicles.map((vehicle) => (
                       <div
                         key={vehicle.id}
-                        className="bg-white rounded-xl overflow-hidden border border-[#1E3A2B]/10 shadow-sm hover:shadow-lg transition"
+                        className="overflow-hidden rounded-xl border border-[#D9B77A] bg-white text-[#123629] shadow-sm transition hover:shadow-md"
                       >
-                        <div className="aspect-[4/3] bg-[#F7F7F7] p-3">
+                        <div className="aspect-[4/3] bg-[#F3E9D8] p-3">
                           <img
                             src={vehicle.image}
                             alt={vehicle.name}
-                            className="w-full h-full object-contain"
+                            className="h-full w-full object-contain"
                             loading="lazy"
                           />
                         </div>
 
                         <div className="p-4">
                           <div className="flex items-start justify-between gap-2">
-                            <h3 className="font-bold text-[#1E3A2B]">
-                              {vehicle.name}
-                            </h3>
-
-                            <span className="text-[10px] px-2 py-1 rounded-full bg-[#DDE9DF] text-[#1E3A2B] font-semibold whitespace-nowrap">
+                            <h3 className="font-bold">{vehicle.name}</h3>
+                            <span className="whitespace-nowrap rounded-full bg-[#E4D2B4] px-2 py-1 text-[10px] font-semibold text-[#123629]">
                               {vehicle.type}
                             </span>
                           </div>
 
-                          <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-[11px] text-gray-500">
+                          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-gray-500">
                             <span>⚙ {vehicle.engine}</span>
-
                             <span>⛽ {vehicle.fuel}</span>
-
                             <span>◉ {vehicle.mileage}</span>
                           </div>
 
-                          <p className="text-lg font-bold text-[#1E3A2B] mt-3">
+                          <p className="mt-3 text-lg font-bold">
                             ₹{vehicle.price}
                             <span className="text-xs font-normal text-gray-500">
                               {" "}
@@ -931,7 +933,11 @@ const SoloRide = () => {
                             </span>
                           </p>
 
-                          <button className="w-full mt-3 h-10 bg-[#D96B43] hover:bg-[#c55c39] text-white rounded-lg text-sm font-semibold transition">
+                          <button
+                            type="button"
+                            className="mt-3 h-10 w-full rounded-lg bg-[#C9572B] text-sm font-semibold text-white transition hover:bg-[#A94320]"
+                            onClick={() => Handeling(vehicle)}
+                          >
                             Book Now
                           </button>
                         </div>
@@ -939,18 +945,15 @@ const SoloRide = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="bg-white rounded-2xl border border-[#1E3A2B]/10 p-12 text-center">
-                    <div className="text-5xl mb-4">🚫</div>
-
+                  <div className="rounded-2xl border border-[#D9B77A] bg-white p-12 text-center text-[#123629]">
+                    <div className="mb-4 text-5xl">🚫</div>
                     <h3 className="text-xl font-bold">No vehicles found</h3>
-
-                    <p className="text-sm text-gray-500 mt-2">
+                    <p className="mt-2 text-sm text-gray-500">
                       No vehicle matches your selected filters.
                     </p>
-
                     <button
                       onClick={clearFilters}
-                      className="mt-5 px-5 py-2.5 bg-[#D96B43] text-white rounded-lg font-semibold"
+                      className="mt-5 rounded-lg bg-[#C9572B] px-5 py-2.5 font-semibold text-white hover:bg-[#A94320]"
                     >
                       Reset Filters
                     </button>
